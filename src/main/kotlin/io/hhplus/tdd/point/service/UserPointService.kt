@@ -6,8 +6,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserPointService(
-        private val userPointTable: UserPointTable,
+    private val userPointTable: UserPointTable,
 ) {
-    // TODO: 기능 구현
-    fun getPointById(id: Long): UserPoint = UserPoint(0, 0, 0)
+    fun getPointById(id: Long): UserPoint = userPointTable.selectById(id)
 }
