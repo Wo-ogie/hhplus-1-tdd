@@ -2,13 +2,18 @@ package io.hhplus.tdd.point.api
 
 import io.hhplus.tdd.point.domain.PointHistory
 import io.hhplus.tdd.point.domain.UserPoint
+import io.hhplus.tdd.point.service.PointHistoryService
+import io.hhplus.tdd.point.service.UserPointService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/point")
-class PointController {
+class PointController(
+    private val userPointService: UserPointService,
+    private val pointHistoryService: PointHistoryService
+) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     /**
