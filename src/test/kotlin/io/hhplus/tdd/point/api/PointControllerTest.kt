@@ -1,8 +1,11 @@
 package io.hhplus.tdd.point.api
 
+import io.hhplus.tdd.point.domain.PointHistory
+import io.hhplus.tdd.point.domain.TransactionType
 import io.hhplus.tdd.point.domain.UserPoint
 import io.hhplus.tdd.point.service.PointHistoryService
 import io.hhplus.tdd.point.service.UserPointService
+import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.then
@@ -53,7 +56,44 @@ class PointControllerTest(
         then(pointHistoryService).shouldHaveNoInteractions()
     }
 
+    @Test
+    fun `유저 포인트 id가 주어지고, 주어진 id에 해당하는 포인트 내역을 조회하면, 조회된 포인트 내역 목록이 응답된다`() {
+        // given
+        val userId = 1L
+        val expectedResult = listOf(
+            createPointHistory(2L, userId),
+            createPointHistory(3L, userId),
+        )
+        given(pointHistoryService.findHistoriesByUserId(userId)).willReturn(expectedResult)
+
+        // when & then
+        mvc.perform(get("/point/{id}/histories", userId))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$", hasSize<PointHistory>(expectedResult.size)))
+            .andExpect(jsonPath("$.[0].id").value(expectedResult[0].id))
+            .andExpect(jsonPath("$.[1].id").value(expectedResult[1].id))
+        then(pointHistoryService).should().findHistoriesByUserId(userId)
+        then(userPointService).shouldHaveNoInteractions()
+        then(pointHistoryService).shouldHaveNoMoreInteractions()
+    }
+
+    @Test
+    fun `양수가_아닌_유저 포인트 id가 주어지고, 주어진 id에 해당하는 포인트 내역을 조회하면, 예외가 발생한다`() {
+        // given
+        val userId = -1L
+
+        // when & then
+        mvc.perform(get("/point/{id}/histories", userId))
+            .andExpect(status().isInternalServerError)
+        then(userPointService).shouldHaveNoInteractions()
+        then(pointHistoryService).shouldHaveNoInteractions()
+    }
+
     private fun createUserPoint(id: Long): UserPoint {
         return UserPoint(id = id, point = 10L, updateMillis = 12345L)
+    }
+
+    private fun createPointHistory(id: Long, userId: Long): PointHistory {
+        return PointHistory(id, userId, TransactionType.CHARGE, 1_000, 12345)
     }
 }
