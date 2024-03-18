@@ -23,7 +23,8 @@ class PointController(
     fun point(
         @PathVariable id: Long,
     ): UserPoint {
-        return UserPoint(0, 0, 0)
+        if (id <= 0) throw IllegalArgumentException("Id는 0보다 커야 합니다. id=${id}")
+        return userPointService.getPointById(id)
     }
 
     /**
