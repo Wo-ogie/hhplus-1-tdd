@@ -3,8 +3,7 @@ package io.hhplus.tdd.point.api
 import io.hhplus.tdd.point.domain.PointHistory
 import io.hhplus.tdd.point.domain.TransactionType
 import io.hhplus.tdd.point.domain.UserPoint
-import io.hhplus.tdd.point.service.PointHistoryService
-import io.hhplus.tdd.point.service.UserPointService
+import io.hhplus.tdd.point.service.PointService
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
@@ -23,25 +22,21 @@ class PointControllerTest(
 ) {
 
     @MockBean
-    private lateinit var userPointService: UserPointService
-
-    @MockBean
-    private lateinit var pointHistoryService: PointHistoryService
+    private lateinit var pointService: PointService
 
     @Test
     fun `주어진 id로 유저 포인트를 단건 조회하면 조회된 포인트가 응답된다`() {
         // given
         val userPointId = 1L
         val expectedResult = createUserPoint(userPointId)
-        given(userPointService.getPointById(userPointId)).willReturn(expectedResult)
+        given(pointService.getPointById(userPointId)).willReturn(expectedResult)
 
         // when & then
         mvc.perform(get("/point/{id}", userPointId))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").value(expectedResult.id))
-        then(userPointService).should().getPointById(userPointId)
-        then(userPointService).shouldHaveNoMoreInteractions()
-        then(pointHistoryService).shouldHaveNoInteractions()
+        then(pointService).should().getPointById(userPointId)
+        then(pointService).shouldHaveNoMoreInteractions()
     }
 
     @Test
@@ -52,8 +47,7 @@ class PointControllerTest(
         // when & then
         mvc.perform(get("/point/{id}", userPointId))
             .andExpect(status().isInternalServerError)
-        then(userPointService).shouldHaveNoInteractions()
-        then(pointHistoryService).shouldHaveNoInteractions()
+        then(pointService).shouldHaveNoInteractions()
     }
 
     @Test
@@ -64,7 +58,7 @@ class PointControllerTest(
             createPointHistory(2L, userId),
             createPointHistory(3L, userId),
         )
-        given(pointHistoryService.findHistoriesByUserId(userId)).willReturn(expectedResult)
+        given(pointService.findHistoriesByUserId(userId)).willReturn(expectedResult)
 
         // when & then
         mvc.perform(get("/point/{id}/histories", userId))
@@ -72,9 +66,8 @@ class PointControllerTest(
             .andExpect(jsonPath("$", hasSize<PointHistory>(expectedResult.size)))
             .andExpect(jsonPath("$.[0].id").value(expectedResult[0].id))
             .andExpect(jsonPath("$.[1].id").value(expectedResult[1].id))
-        then(pointHistoryService).should().findHistoriesByUserId(userId)
-        then(userPointService).shouldHaveNoInteractions()
-        then(pointHistoryService).shouldHaveNoMoreInteractions()
+        then(pointService).should().findHistoriesByUserId(userId)
+        then(pointService).shouldHaveNoMoreInteractions()
     }
 
     @Test
@@ -85,8 +78,7 @@ class PointControllerTest(
         // when & then
         mvc.perform(get("/point/{id}/histories", userId))
             .andExpect(status().isInternalServerError)
-        then(userPointService).shouldHaveNoInteractions()
-        then(pointHistoryService).shouldHaveNoInteractions()
+        then(pointService).shouldHaveNoInteractions()
     }
 
     private fun createUserPoint(id: Long): UserPoint {
