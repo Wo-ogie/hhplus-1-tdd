@@ -9,6 +9,6 @@ class PointHistoryService(
     private val pointHistoryTable: PointHistoryTable
 ) {
     fun findHistoriesByUserId(userId: Long): List<PointHistory> {
-        return emptyList()
+        return pointHistoryTable.selectAllByUserId(userId)
     }
 }
