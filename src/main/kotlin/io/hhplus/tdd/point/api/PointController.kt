@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/point")
 class PointController(
-    private val pointService: PointService
+    private val pointService: PointService,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
@@ -39,14 +39,12 @@ class PointController(
         return pointService.chargePoint(userId = id, amount = amount)
     }
 
-    /**
-     * TODO - 특정 유저의 포인트를 사용하는 기능을 작성해주세요.
-     */
     @PatchMapping("{id}/use")
     fun use(
         @PathVariable id: Long,
         @RequestBody amount: Long,
     ): UserPoint {
-        return UserPoint(0, 0, 0)
+        if (amount <= 0) throw IllegalArgumentException("사용 포인트는 0보다 커야 합니다. amount=$amount")
+        return pointService.usePoint(userId = id, amount = amount)
     }
 }
