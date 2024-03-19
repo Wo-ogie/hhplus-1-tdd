@@ -11,8 +11,10 @@ import org.mockito.BDDMockito.then
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -79,6 +81,47 @@ class PointControllerTest(
         mvc.perform(get("/point/{id}/histories", userId))
             .andExpect(status().isInternalServerError)
         then(pointService).shouldHaveNoInteractions()
+    }
+
+    @Test
+    fun `유저 포인트 id와 충전 금액이 주어지고, 포인트를 충전하면, 충전된 유저 포인트 정보를 응답한다`() {
+        // given
+        val userPointId = 1L
+        val amount = 500L
+        val expectedResult = createUserPoint(userPointId, 1000L + amount)
+        given(pointService.chargePoint(userPointId, amount)).willReturn(expectedResult)
+
+        // when & then
+        mvc.perform(
+            patch("/point/${userPointId}/charge")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(amount.toString())
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.id").value(expectedResult.id))
+            .andExpect(jsonPath("$.point").value(expectedResult.point))
+            .andExpect(jsonPath("$.updateMillis").value(expectedResult.updateMillis))
+        then(pointService).should().chargePoint(userPointId, amount)
+        then(pointService).shouldHaveNoMoreInteractions()
+    }
+
+    @Test
+    fun `유저 포인트 id와 양수가 아닌 충전 금액이 주어지고, 포인트를 충전하면, 예외가 발생한다`() {
+        // given
+        val userPointId = 1L
+        val amount = -500L
+
+        // when & then
+        mvc.perform(
+            patch("/point/${userPointId}/charge")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(amount.toString())
+        ).andExpect(status().isInternalServerError)
+        then(pointService).shouldHaveNoInteractions()
+    }
+
+    private fun createUserPoint(id: Long, point: Long): UserPoint {
+        return UserPoint(id = id, point = point, updateMillis = 12345L)
     }
 
     private fun createUserPoint(id: Long): UserPoint {
