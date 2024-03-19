@@ -27,7 +27,7 @@ class PointController(
         @PathVariable id: Long,
     ): List<PointHistory> {
         if (id <= 0) throw IllegalArgumentException("Id는 0보다 커야 합니다. id=${id}")
-        return pointService.findHistoriesByUserId(id)
+        return pointService.findPointHistoriesByUserId(id)
     }
 
     /**

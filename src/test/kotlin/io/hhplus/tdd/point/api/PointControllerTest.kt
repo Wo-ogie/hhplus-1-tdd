@@ -58,7 +58,7 @@ class PointControllerTest(
             createPointHistory(2L, userId),
             createPointHistory(3L, userId),
         )
-        given(pointService.findHistoriesByUserId(userId)).willReturn(expectedResult)
+        given(pointService.findPointHistoriesByUserId(userId)).willReturn(expectedResult)
 
         // when & then
         mvc.perform(get("/point/{id}/histories", userId))
@@ -66,7 +66,7 @@ class PointControllerTest(
             .andExpect(jsonPath("$", hasSize<PointHistory>(expectedResult.size)))
             .andExpect(jsonPath("$.[0].id").value(expectedResult[0].id))
             .andExpect(jsonPath("$.[1].id").value(expectedResult[1].id))
-        then(pointService).should().findHistoriesByUserId(userId)
+        then(pointService).should().findPointHistoriesByUserId(userId)
         then(pointService).shouldHaveNoMoreInteractions()
     }
 

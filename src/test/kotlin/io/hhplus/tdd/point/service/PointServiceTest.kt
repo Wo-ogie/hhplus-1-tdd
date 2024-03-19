@@ -1,16 +1,16 @@
 package io.hhplus.tdd.point.service
 
-import io.hhplus.tdd.database.PointHistoryTable
-import io.hhplus.tdd.database.UserPointTable
 import io.hhplus.tdd.point.domain.PointHistory
 import io.hhplus.tdd.point.domain.TransactionType
 import io.hhplus.tdd.point.domain.UserPoint
-import org.assertj.core.api.Assertions
+import io.hhplus.tdd.repository.PointHistoryRepository
+import io.hhplus.tdd.repository.UserPointRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.BDDMockito
-import org.mockito.BDDMockito.*
+import org.mockito.BDDMockito.given
+import org.mockito.BDDMockito.then
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -22,26 +22,26 @@ class PointServiceTest {
     private lateinit var sut: PointService
 
     @Mock
-    private lateinit var userPointTable: UserPointTable
+    private lateinit var userPointRepository: UserPointRepository
 
     @Mock
-    private lateinit var pointHistoryTable: PointHistoryTable
+    private lateinit var pointHistoryRepository: PointHistoryRepository
 
     @Test
     fun `주어진 id로 유저의 포인트를 조회하면 조회된 유저 포인트가 반환된다`() {
         // given
         val userPointId = 1L
         val expectedResult = createUserPoint(userPointId)
-        given(userPointTable.selectById(userPointId)).willReturn(expectedResult)
+        given(userPointRepository.getById(userPointId)).willReturn(expectedResult)
 
         // when
         val actualResult = sut.getPointById(userPointId)
 
         // then
-        then(userPointTable).should().selectById(userPointId)
-        then(userPointTable).shouldHaveNoMoreInteractions()
-        then(pointHistoryTable).shouldHaveNoInteractions()
-        Assertions.assertThat(actualResult).isEqualTo(expectedResult)
+        then(userPointRepository).should().getById(userPointId)
+        then(userPointRepository).shouldHaveNoMoreInteractions()
+        then(pointHistoryRepository).shouldHaveNoInteractions()
+        assertThat(actualResult).isEqualTo(expectedResult)
     }
 
     @Test
@@ -52,18 +52,17 @@ class PointServiceTest {
             createPointHistory(2L, userId),
             createPointHistory(3L, userId),
         )
-        given(pointHistoryTable.selectAllByUserId(userId)).willReturn(expectedResult)
+        given(pointHistoryRepository.findAllByUserId(userId)).willReturn(expectedResult)
 
         // when
-        val actualResult = sut.findHistoriesByUserId(userId)
+        val actualResult = sut.findPointHistoriesByUserId(userId)
 
         // then
         assertIterableEquals(expectedResult, actualResult)
-        then(pointHistoryTable).should().selectAllByUserId(userId)
-        then(userPointTable).shouldHaveNoInteractions()
-        then(pointHistoryTable).shouldHaveNoMoreInteractions()
+        then(pointHistoryRepository).should().findAllByUserId(userId)
+        then(userPointRepository).shouldHaveNoInteractions()
+        then(pointHistoryRepository).shouldHaveNoMoreInteractions()
     }
-
 
     private fun createUserPoint(id: Long): UserPoint {
         return UserPoint(id = id, point = 10L, updateMillis = 12345L)
