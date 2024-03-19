@@ -20,6 +20,11 @@ class PointHistoryMemoryRepository(
         transactionType: TransactionType,
         updateMillis: Long
     ): PointHistory {
-        TODO("Not yet implemented")
+        return pointHistoryTable.insert(
+            id = userId,
+            amount = amount,
+            transactionType = transactionType,
+            updateMillis = updateMillis
+        )
     }
 }
