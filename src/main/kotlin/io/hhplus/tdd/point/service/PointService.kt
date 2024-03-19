@@ -41,6 +41,17 @@ class PointService(
      * @return 충전된 상태의 user point 정보
      */
     fun chargePoint(userId: Long, amount: Long): UserPoint {
-        TODO("Not yet implemented")
+        val userPoint = getPointById(userId)
+        val chargedUserPoint = userPointRepository.saveOrUpdate(
+            id = userId,
+            point = userPoint.point + amount
+        )
+        pointHistoryRepository.save(
+            userId = userId,
+            amount = amount,
+            transactionType = TransactionType.CHARGE,
+            updateMillis = chargedUserPoint.updateMillis
+        )
+        return chargedUserPoint
     }
 }
