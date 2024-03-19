@@ -32,6 +32,27 @@ class UserPointMemoryRepositoryTest {
         assertThat(actualResult).isEqualTo(expectedResult)
     }
 
+    @Test
+    fun `유저 포인트를 신규 저장하거나, 기존 유저 포인트를 갱신한다`() {
+        // given
+        val userPointId = 1L
+        val amount = 1000L
+        val expectedResult = createUserPoint(userPointId, amount)
+        given(userPointTable.insertOrUpdate(userPointId, amount)).willReturn(expectedResult)
+
+        // when
+        val actualResult = sut.saveOrUpdate(userPointId, amount)
+
+        // then
+        then(userPointTable).should().insertOrUpdate(userPointId, amount)
+        then(userPointTable).shouldHaveNoMoreInteractions()
+        assertThat(actualResult).isEqualTo(expectedResult)
+    }
+
+    private fun createUserPoint(id: Long, point: Long): UserPoint {
+        return UserPoint(id = id, point = point, updateMillis = 12345L)
+    }
+
     private fun createUserPoint(id: Long): UserPoint {
         return UserPoint(id = id, point = 10L, updateMillis = 12345L)
     }

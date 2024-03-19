@@ -12,4 +12,8 @@ class UserPointMemoryRepository(
     override fun getById(id: Long): UserPoint {
         return userPointTable.selectById(id)
     }
+
+    override fun saveOrUpdate(id: Long, point: Long): UserPoint {
+        TODO("Not yet implemented")
+    }
 }
