@@ -10,6 +10,6 @@ class PointHistoryMemoryRepository(
 ) : PointHistoryRepository {
 
     override fun findAllByUserId(userId: Long): List<PointHistory> {
-        TODO("Not yet implemented")
+        return pointHistoryTable.selectAllByUserId(userId)
     }
 }
