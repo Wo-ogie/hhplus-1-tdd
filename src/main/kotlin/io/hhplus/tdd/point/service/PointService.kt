@@ -1,6 +1,7 @@
 package io.hhplus.tdd.point.service
 
 import io.hhplus.tdd.point.domain.PointHistory
+import io.hhplus.tdd.point.domain.TransactionType
 import io.hhplus.tdd.point.domain.UserPoint
 import io.hhplus.tdd.repository.PointHistoryRepository
 import io.hhplus.tdd.repository.UserPointRepository
@@ -30,5 +31,16 @@ class PointService(
      */
     fun findPointHistoriesByUserId(userId: Long): List<PointHistory> {
         return pointHistoryRepository.findAllByUserId(userId)
+    }
+
+    /**
+     * 포인트를 충전한다.
+     *
+     * @param userId 포인트를 충전할 user의 id
+     * @param amount 충전할 포인트 액수
+     * @return 충전된 상태의 user point 정보
+     */
+    fun chargePoint(userId: Long, amount: Long): UserPoint {
+        TODO("Not yet implemented")
     }
 }

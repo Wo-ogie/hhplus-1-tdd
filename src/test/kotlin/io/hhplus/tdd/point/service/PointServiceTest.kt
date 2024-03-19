@@ -64,6 +64,52 @@ class PointServiceTest {
         then(pointHistoryRepository).shouldHaveNoMoreInteractions()
     }
 
+    @Test
+    fun `특정 유저의 포인트를 충전하면, 충전된 유저 포인트 정보가 반환된다`() {
+        // given
+        val userId = 1L
+        val amount = 1_000L
+        val previousUserPoint = createUserPoint(userId, 500L, 1_000_000L)
+        val expectedResult = createUserPoint(
+            id = userId,
+            point = previousUserPoint.point + amount,
+            updateMillis = 1_000_123L
+        )
+        given(userPointRepository.getById(userId)).willReturn(previousUserPoint)
+        given(
+            userPointRepository.saveOrUpdate(
+                id = userId,
+                point = previousUserPoint.point + amount
+            )
+        ).willReturn(expectedResult)
+        given(
+            pointHistoryRepository.save(
+                userId = userId,
+                amount = amount,
+                transactionType = TransactionType.CHARGE,
+                updateMillis = expectedResult.updateMillis
+            )
+        ).willReturn(createPointHistory(2L, userId))
+
+        // when
+        val actualResult = sut.chargePoint(userId, amount)
+
+        // then
+        then(userPointRepository).should().getById(userId)
+        then(userPointRepository).should().saveOrUpdate(userId, previousUserPoint.point + amount)
+        then(pointHistoryRepository).should().save(userId, amount, TransactionType.CHARGE, expectedResult.updateMillis)
+        then(userPointRepository).shouldHaveNoMoreInteractions()
+        then(pointHistoryRepository).shouldHaveNoMoreInteractions()
+        assertThat(actualResult).isEqualTo(expectedResult)
+        assertThat(actualResult.id).isEqualTo(previousUserPoint.id)
+        assertThat(actualResult.point).isGreaterThan(previousUserPoint.point)
+        assertThat(actualResult.updateMillis).isNotEqualTo(previousUserPoint.updateMillis)
+    }
+
+    private fun createUserPoint(id: Long, point: Long, updateMillis: Long): UserPoint {
+        return UserPoint(id = id, point = point, updateMillis = updateMillis)
+    }
+
     private fun createUserPoint(id: Long): UserPoint {
         return UserPoint(id = id, point = 10L, updateMillis = 12345L)
     }
