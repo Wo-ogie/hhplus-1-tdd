@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 @Service
 class PointService(
     private val userPointRepository: UserPointRepository,
-    private val pointHistoryRepository: PointHistoryRepository
+    private val pointHistoryRepository: PointHistoryRepository,
 ) {
 
     /**
@@ -50,6 +50,31 @@ class PointService(
             userId = userId,
             amount = amount,
             transactionType = TransactionType.CHARGE,
+            updateMillis = chargedUserPoint.updateMillis
+        )
+        return chargedUserPoint
+    }
+
+    /**
+     * 포인트를 사용한다.
+     * 사용한 액수만큼 포인트가 차감된다.
+     *
+     * @param userId 포인트를 사용하려는 user id
+     * @param amount 사용할 포인트 액수
+     * @return 사용한 상태의 user point 정보
+     * @throws IllegalArgumentException 보유 포인트가 사용하려는 포인트보다 적은 경우
+     */
+    fun usePoint(userId: Long, amount: Long): UserPoint {
+        val userPoint = getPointById(userId)
+        val pointDiff = userPoint.point - amount
+        if (pointDiff < 0) {
+            throw IllegalArgumentException("보유 포인트(${userPoint.point}p)가 부족합니다.")
+        }
+        val chargedUserPoint = userPointRepository.saveOrUpdate(id = userId, point = pointDiff)
+        pointHistoryRepository.save(
+            userId = userId,
+            amount = amount,
+            transactionType = TransactionType.USE,
             updateMillis = chargedUserPoint.updateMillis
         )
         return chargedUserPoint
