@@ -30,15 +30,13 @@ class PointController(
         return pointService.findPointHistoriesByUserId(id)
     }
 
-    /**
-     * TODO - 특정 유저의 포인트를 충전하는 기능을 작성해주세요.
-     */
     @PatchMapping("{id}/charge")
     fun charge(
         @PathVariable id: Long,
         @RequestBody amount: Long,
     ): UserPoint {
-        return UserPoint(0, 0, 0)
+        if (amount <= 0) throw IllegalArgumentException("충전 금액은 0보다 커야 합니다. amount=${amount}")
+        return pointService.chargePoint(userId = id, amount = amount)
     }
 
     /**
