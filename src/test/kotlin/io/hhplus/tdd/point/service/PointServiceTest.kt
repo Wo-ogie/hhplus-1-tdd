@@ -6,6 +6,7 @@ import io.hhplus.tdd.point.domain.UserPoint
 import io.hhplus.tdd.repository.PointHistoryRepository
 import io.hhplus.tdd.repository.UserPointRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -89,7 +90,7 @@ class PointServiceTest {
                 transactionType = TransactionType.CHARGE,
                 updateMillis = expectedResult.updateMillis
             )
-        ).willReturn(createPointHistory(2L, userId))
+        ).willReturn(createPointHistory(2L, userId, TransactionType.CHARGE))
 
         // when
         val actualResult = sut.chargePoint(userId, amount)
@@ -106,12 +107,65 @@ class PointServiceTest {
         assertThat(actualResult.updateMillis).isNotEqualTo(previousUserPoint.updateMillis)
     }
 
+    @Test
+    fun `특정 유저가 포인트를 사용하면, 사용한 액수만큼 포인트가 차감되고, 변경된 유저 포인트 정보가 반환된다`() {
+        // given
+        val userId = 1L
+        val amount = 1_000L
+        val previousUserPoint = createUserPoint(userId, 1500L, 1_000_000L)
+        val expectedResult = createUserPoint(
+            id = userId,
+            point = previousUserPoint.point - amount,
+            updateMillis = 1_000_123L
+        )
+        given(userPointRepository.getById(userId)).willReturn(previousUserPoint)
+        given(userPointRepository.saveOrUpdate(userId, previousUserPoint.point - amount)).willReturn(expectedResult)
+        given(pointHistoryRepository.save(userId, amount, TransactionType.USE, expectedResult.updateMillis))
+            .willReturn(createPointHistory(2L, userId, TransactionType.USE))
+
+        // when
+        val actualResult = sut.usePoint(userId, amount)
+
+        // then
+        then(userPointRepository).should().getById(userId)
+        then(userPointRepository).should().saveOrUpdate(userId, previousUserPoint.point - amount)
+        then(pointHistoryRepository).should().save(userId, amount, TransactionType.USE, expectedResult.updateMillis)
+        then(userPointRepository).shouldHaveNoMoreInteractions()
+        then(pointHistoryRepository).shouldHaveNoMoreInteractions()
+        assertThat(actualResult).isEqualTo(expectedResult)
+        assertThat(actualResult.id).isEqualTo(previousUserPoint.id)
+        assertThat(actualResult.point).isLessThan(previousUserPoint.point)
+        assertThat(actualResult.updateMillis).isNotEqualTo(previousUserPoint.updateMillis)
+    }
+
+    @Test
+    fun `보유한 포인트가 사용하려는 포인트보다 적을 때, 유저가 포인트를 사용하려고 하면, 예외가 발생한다`() {
+        // given
+        val userId = 1L
+        val amount = 1_000L
+        val previousUserPoint = createUserPoint(userId, 0L, 1_000_000L)
+        given(userPointRepository.getById(userId)).willReturn(previousUserPoint)
+
+        // when
+        val throwable = catchThrowable { sut.usePoint(userId, amount) }
+
+        // then
+        then(userPointRepository).should().getById(userId)
+        then(userPointRepository).shouldHaveNoMoreInteractions()
+        then(pointHistoryRepository).shouldHaveNoInteractions()
+        assertThat(throwable).isInstanceOf(IllegalArgumentException::class.java)
+    }
+
     private fun createUserPoint(id: Long, point: Long, updateMillis: Long): UserPoint {
         return UserPoint(id = id, point = point, updateMillis = updateMillis)
     }
 
     private fun createUserPoint(id: Long): UserPoint {
         return UserPoint(id = id, point = 10L, updateMillis = 12345L)
+    }
+
+    private fun createPointHistory(id: Long, userId: Long, transactionType: TransactionType): PointHistory {
+        return PointHistory(id, userId, transactionType, 1_000, 12345)
     }
 
     private fun createPointHistory(id: Long, userId: Long): PointHistory {
