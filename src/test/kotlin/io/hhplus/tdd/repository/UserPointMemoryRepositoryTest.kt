@@ -2,6 +2,8 @@ package io.hhplus.tdd.repository
 
 import io.hhplus.tdd.database.UserPointTable
 import io.hhplus.tdd.point.domain.UserPoint
+import io.hhplus.tdd.point.repository.UserPointMemoryRepository
+import io.hhplus.tdd.point.repository.UserPointRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

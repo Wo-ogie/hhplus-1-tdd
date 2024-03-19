@@ -3,6 +3,8 @@ package io.hhplus.tdd.repository
 import io.hhplus.tdd.database.PointHistoryTable
 import io.hhplus.tdd.point.domain.PointHistory
 import io.hhplus.tdd.point.domain.TransactionType
+import io.hhplus.tdd.point.repository.PointHistoryMemoryRepository
+import io.hhplus.tdd.point.repository.PointHistoryRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import org.junit.jupiter.api.Test

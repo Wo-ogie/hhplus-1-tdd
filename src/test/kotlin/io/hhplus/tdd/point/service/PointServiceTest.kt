@@ -3,8 +3,8 @@ package io.hhplus.tdd.point.service
 import io.hhplus.tdd.point.domain.PointHistory
 import io.hhplus.tdd.point.domain.TransactionType
 import io.hhplus.tdd.point.domain.UserPoint
-import io.hhplus.tdd.repository.PointHistoryRepository
-import io.hhplus.tdd.repository.UserPointRepository
+import io.hhplus.tdd.point.repository.PointHistoryRepository
+import io.hhplus.tdd.point.repository.UserPointRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Assertions.assertIterableEquals
