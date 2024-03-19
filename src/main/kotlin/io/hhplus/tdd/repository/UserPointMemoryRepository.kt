@@ -14,6 +14,6 @@ class UserPointMemoryRepository(
     }
 
     override fun saveOrUpdate(id: Long, point: Long): UserPoint {
-        TODO("Not yet implemented")
+        return userPointTable.insertOrUpdate(id, point)
     }
 }
