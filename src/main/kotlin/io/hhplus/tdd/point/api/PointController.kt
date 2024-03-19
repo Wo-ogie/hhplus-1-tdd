@@ -18,7 +18,7 @@ class PointController(
     fun point(
         @PathVariable id: Long,
     ): UserPoint {
-        if (id <= 0) throw IllegalArgumentException("Id는 0보다 커야 합니다. id=${id}")
+        require(id > 0) { "Id는 0보다 커야 합니다. id=${id}" }
         return pointService.getPointById(id)
     }
 
@@ -26,7 +26,7 @@ class PointController(
     fun history(
         @PathVariable id: Long,
     ): List<PointHistory> {
-        if (id <= 0) throw IllegalArgumentException("Id는 0보다 커야 합니다. id=${id}")
+        require(id > 0) { "Id는 0보다 커야 합니다. id=${id}" }
         return pointService.findPointHistoriesByUserId(id)
     }
 
@@ -35,7 +35,7 @@ class PointController(
         @PathVariable id: Long,
         @RequestBody amount: Long,
     ): UserPoint {
-        if (amount <= 0) throw IllegalArgumentException("충전 금액은 0보다 커야 합니다. amount=${amount}")
+        require(amount > 0) { "충전 금액은 0보다 커야 합니다. amount=${amount}" }
         return pointService.chargePoint(userId = id, amount = amount)
     }
 
@@ -44,7 +44,7 @@ class PointController(
         @PathVariable id: Long,
         @RequestBody amount: Long,
     ): UserPoint {
-        if (amount <= 0) throw IllegalArgumentException("사용 포인트는 0보다 커야 합니다. amount=$amount")
+        require(amount > 0) { "사용 포인트는 0보다 커야 합니다. amount=$amount" }
         return pointService.usePoint(userId = id, amount = amount)
     }
 }

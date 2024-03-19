@@ -67,9 +67,7 @@ class PointService(
     fun usePoint(userId: Long, amount: Long): UserPoint {
         val userPoint = getPointById(userId)
         val pointDiff = userPoint.point - amount
-        if (pointDiff < 0) {
-            throw IllegalArgumentException("보유 포인트(${userPoint.point}p)가 부족합니다.")
-        }
+        require(pointDiff >= 0) { "보유 포인트(${userPoint.point}p)가 부족합니다." }
         val chargedUserPoint = userPointRepository.saveOrUpdate(id = userId, point = pointDiff)
         pointHistoryRepository.save(
             userId = userId,
