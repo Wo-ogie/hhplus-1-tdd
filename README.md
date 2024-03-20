@@ -1,6 +1,6 @@
 # TDD로 개발하기
 
-## How to write tests
+## How to TDD
 
 1. 기능 구현을 원하는 요구사항을 검증하는 테스트 추가
 2. 테스트를 만족하도록 기능 구현
@@ -25,3 +25,12 @@
 - GET `/point/{id}/histories` : 포인트 내역을 조회한다.
 - 잔고가 부족할 경우, 포인트 사용은 실패해야 한다.
 - 동시에 여러 건의 포인트 충전, 이용 요청이 들어올 경우 순차적으로 처리되어야 한다. (동시성 고려)
+
+## Additional... (추가적인 구현/고려 사항들)
+
+- Transaction이 적용되어 있지 않기 때문에 각 기능의 원자성(atomicity)이 보장되지 않는다.
+  - ex. 포인트 충전(`PointService.chargePoint()`) 중 포인트 충전 내역 저장(`PointHistoryRepository.save()`) 기능에서 에러가 발생했을 때, 충전된 포인트를 rollback 해야 함.
+- 현재 단일 유저에 대한 동시성 제어만 진행하고 있기 때문에 동시에 여러 유저로부터 포인트 충전/사용 요청이 왔을 경우 `PointHistoryTable`에서 문제가 발생할 수 있음.
+  - `PointHistoryTable`의 `cursor`를 동시에 조회함으로써 PK 역할을 하는 `cursor`가 중복되어 저장될 수 있음.
+  - 다만, 이 부분은 DB 접근/구현 계층에서 고려해야 할 역할이라고 판단하였고, 이번 미션에서는 "database" package 코드를 수정하지 않는 것을 요구했으므로 무시하고 진행.
+  - `AtomicLong`처럼 thread-safe data type을 쓴다던지, 실제 DBMS를 사용한다면 충분히 해결할 수 있고, 해당 계층에서 책임져야 할 역할이라고 생각하였음.
