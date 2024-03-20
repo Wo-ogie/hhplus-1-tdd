@@ -41,21 +41,19 @@ class PointService(
      * @param amount 충전할 포인트 액수
      * @return 충전된 상태의 user point 정보
      */
-    fun chargePoint(userId: Long, amount: Long): UserPoint {
-        return UserLockManager.withLock(userId) {
-            val userPoint = getPointById(userId)
-            val chargedUserPoint = userPointRepository.saveOrUpdate(
-                id = userId,
-                point = userPoint.point + amount
-            )
-            pointHistoryRepository.save(
-                userId = userId,
-                amount = amount,
-                transactionType = TransactionType.CHARGE,
-                updateMillis = chargedUserPoint.updateMillis
-            )
-            chargedUserPoint
-        }
+    fun chargePoint(userId: Long, amount: Long): UserPoint = UserLockManager.withLock(userId) {
+        val userPoint = getPointById(userId)
+        val pointAfterCharge = userPointRepository.saveOrUpdate(
+            id = userId,
+            point = userPoint.point + amount
+        )
+        pointHistoryRepository.save(
+            userId = userId,
+            amount = amount,
+            transactionType = TransactionType.CHARGE,
+            updateMillis = pointAfterCharge.updateMillis
+        )
+        pointAfterCharge
     }
 
     /**
@@ -67,19 +65,17 @@ class PointService(
      * @return 사용한 상태의 user point 정보
      * @throws IllegalArgumentException 보유 포인트가 사용하려는 포인트보다 적은 경우
      */
-    fun usePoint(userId: Long, amount: Long): UserPoint {
-        return UserLockManager.withLock(userId) {
-            val userPoint = getPointById(userId)
-            val pointDiff = userPoint.point - amount
-            require(pointDiff >= 0) { "보유 포인트(${userPoint.point}p)가 부족합니다." }
-            val chargedUserPoint = userPointRepository.saveOrUpdate(id = userId, point = pointDiff)
-            pointHistoryRepository.save(
-                userId = userId,
-                amount = amount,
-                transactionType = TransactionType.USE,
-                updateMillis = chargedUserPoint.updateMillis
-            )
-            chargedUserPoint
-        }
+    fun usePoint(userId: Long, amount: Long): UserPoint = UserLockManager.withLock(userId) {
+        val userPoint = getPointById(userId)
+        val pointDiff = userPoint.point - amount
+        require(pointDiff >= 0) { "보유 포인트(${userPoint.point}p)가 부족합니다." }
+        val pointAfterUse = userPointRepository.saveOrUpdate(id = userId, point = pointDiff)
+        pointHistoryRepository.save(
+            userId = userId,
+            amount = amount,
+            transactionType = TransactionType.USE,
+            updateMillis = pointAfterUse.updateMillis
+        )
+        pointAfterUse
     }
 }
