@@ -26,6 +26,11 @@
 - 잔고가 부족할 경우, 포인트 사용은 실패해야 한다.
 - 동시에 여러 건의 포인트 충전, 이용 요청이 들어올 경우 순차적으로 처리되어야 한다. (동시성 고려)
 
+### 제한사항
+
+- `build.gradle`은 수정하지 않는다 (추가적인 dependencies를 사용하지 않는다)
+- 초기에 주어진 DB 로직(`UserPointTable`, `PointHistoryTable`은 수정하지 않는다)
+
 ## Additional... (추가적인 구현/고려 사항들)
 
 - Transaction이 적용되어 있지 않기 때문에 각 기능의 원자성(atomicity)이 보장되지 않는다.
